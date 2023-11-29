@@ -1,0 +1,42 @@
+/* styles.css */
+
+.container {
+    font-family: 'Arial, sans-serif';
+    max-width: 800px;
+    margin: auto;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .header {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .account-info {
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+  
+  .textarea {
+    width: 80%;
+    padding: 10px;
+    margin-bottom: 20px;
+    min-height: 250px;
+  }
+  
+  .input {
+    width: 80%;
+    padding: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .button {
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  

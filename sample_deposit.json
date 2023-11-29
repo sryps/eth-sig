@@ -1,0 +1,31 @@
+{
+    "function": "deposit",
+    "parameters": [
+      {
+        "name": "pubkey",
+        "type": "bytes",
+        "value": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      },
+      {
+        "name": "deposit",
+        "type": "uint",
+        "value": "32000000000000000000"
+      },
+      {
+        "name": "withdrawal_credentials",
+        "type": "bytes",
+        "value": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      },
+      {
+        "name": "signature",
+        "type": "bytes",
+        "value": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      },
+      {
+        "name": "deposit_data_root",
+        "type": "bytes32",
+        "value": "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+      }
+    ]
+  }
+  
