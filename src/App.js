@@ -101,7 +101,7 @@ function App() {
         <textarea
           value={formData.message}
           onChange={handleInputChange}
-          placeholder="Enter message..."
+          placeholder="Enter deposit_data JSON..."
           className="textarea"
         />
         <br></br>
