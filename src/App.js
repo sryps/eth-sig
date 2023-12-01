@@ -7,7 +7,8 @@ function App() {
   const [web3, setWeb3] = useState(null);
   const [contract, setContract] = useState(null);
   const [formData, setFormData] = useState('');
-  const [contractAddressInput, setContractAddressInput] = useState('');
+  const contractAddressInput = "0x8e22f3F44A6b4E1DFFe22587A06E22283E7AbFB1";
+  const contractAddressURL = "https://goerli.etherscan.io/address/" + contractAddressInput;
   
 
   useEffect(() => {
@@ -28,134 +29,13 @@ function App() {
 
   useEffect(() => {
     if (web3 && contractAddressInput) {
-      // contract ABI - https://goerli.etherscan.io/address/0xff50ed3d0ec03ac01d4c79aad74928bff48a7b2b#code
-      const contractABI = [
-        {
-          "inputs": [],
-          "stateMutability": "nonpayable",
-          "type": "constructor"
-        },
-        {
-          "anonymous": false,
-          "inputs": [
-            {
-              "indexed": false,
-              "internalType": "bytes",
-              "name": "pubkey",
-              "type": "bytes"
-            },
-            {
-              "indexed": false,
-              "internalType": "bytes",
-              "name": "withdrawal_credentials",
-              "type": "bytes"
-            },
-            {
-              "indexed": false,
-              "internalType": "bytes",
-              "name": "amount",
-              "type": "bytes"
-            },
-            {
-              "indexed": false,
-              "internalType": "bytes",
-              "name": "signature",
-              "type": "bytes"
-            },
-            {
-              "indexed": false,
-              "internalType": "bytes",
-              "name": "index",
-              "type": "bytes"
-            }
-          ],
-          "name": "DepositEvent",
-          "type": "event"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes",
-              "name": "pubkey",
-              "type": "bytes"
-            },
-            {
-              "internalType": "bytes",
-              "name": "withdrawal_credentials",
-              "type": "bytes"
-            },
-            {
-              "internalType": "bytes",
-              "name": "signature",
-              "type": "bytes"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "deposit_data_root",
-              "type": "bytes32"
-            }
-          ],
-          "name": "deposit",
-          "outputs": [],
-          "stateMutability": "payable",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "get_deposit_count",
-          "outputs": [
-            {
-              "internalType": "bytes",
-              "name": "",
-              "type": "bytes"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [],
-          "name": "get_deposit_root",
-          "outputs": [
-            {
-              "internalType": "bytes32",
-              "name": "",
-              "type": "bytes32"
-            }
-          ],
-          "stateMutability": "view",
-          "type": "function"
-        },
-        {
-          "inputs": [
-            {
-              "internalType": "bytes4",
-              "name": "interfaceId",
-              "type": "bytes4"
-            }
-          ],
-          "name": "supportsInterface",
-          "outputs": [
-            {
-              "internalType": "bool",
-              "name": "",
-              "type": "bool"
-            }
-          ],
-          "stateMutability": "pure",
-          "type": "function"
-        }
-      ];
+      const contractABI = [{"constant":true,"inputs":[],"name":"DEPOSIT_CONTRACT_ADDRESS","outputs":[{"internalType":"address","name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"internalType":"bytes[]","name":"pubkeys","type":"bytes[]"},{"internalType":"bytes[]","name":"withdrawal_credentials","type":"bytes[]"},{"internalType":"bytes[]","name":"signatures","type":"bytes[]"},{"internalType":"bytes32[]","name":"deposit_data_roots","type":"bytes32[]"}],"name":"batchDeposit","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"DEPOSIT_AMOUNT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"LogSendDepositLeftover","type":"event"}]
 
       try {
         const contractInstance = new web3.eth.Contract(contractABI, contractAddressInput);
         setContract(contractInstance);
-  
-        // Log the contract address
+        
         console.log('Contract Address:', contractAddressInput);
-  
-        // Log the contract methods for debugging
-        console.log('Contract Methods:', contractInstance.methods);
   
       } catch (error) {
         console.error('Error initializing contract instance:', error);
@@ -165,27 +45,44 @@ function App() {
 
   const handleSendTransaction = async () => {
     if (web3 && contract) {
+      let transactionParameters = {};
       try {
-        const isValid = isValidJSON(formData["message"]);
-        console.log(`Is JSON valid? ${isValid}`);
+        isValidJSON(formData["message"]);
 
         const contractData = JSON.parse(formData["message"]);
-        console.log(contractData);
 
-        const transactionParameters = {
+        let pubkeys = []
+        let withdrawals = []
+        let signatures = []
+        let deposit_data_roots = []
+        
+        
+        for (let i in contractData) {
+          pubkeys.push(keyToHex(contractData[i]["pubkey"]));
+          withdrawals.push(keyToHex(contractData[i]["withdrawal_credentials"]));
+          signatures.push(keyToHex(contractData[i]["signature"]));
+          deposit_data_roots.push(keyToHex(contractData[i]["deposit_data_root"]));
+        }
+
+        let amount = web3.utils.toWei((pubkeys.length * 32).toString(), 'ether');
+        
+
+        transactionParameters = {
+          from: account,
           to: contractAddressInput,
-          data: contract.methods.storeData(contractData).encodeABI()
+          value: amount,
+          data: contract.methods.batchDeposit(pubkeys,withdrawals,signatures,deposit_data_roots).encodeABI()
         };
-
-        const gas = await contract.methods.storeData(contractData).estimateGas({ from: account });
-        transactionParameters.gas = web3.utils.toHex(gas);
-
-        const signedTransaction = await web3.eth.accounts.signTransaction(transactionParameters, account);
-
-        const receipt = await web3.eth.sendSignedTransaction(signedTransaction.rawTransaction);
-        console.log('Transaction Receipt:', receipt);
+        
+      }
+      catch (error) {
+        console.error('Preparation Error:', error.message);
+      }
+      try {
+        const transactionHash = await web3.eth.sendTransaction(transactionParameters);
+        console.log('Transaction sent:', transactionHash);
       } catch (error) {
-        console.error('Transaction Error:', error.message);
+        console.error('Transaction error:', error);
       }
     }
   };
@@ -194,22 +91,13 @@ function App() {
     setFormData({ message: event.target.value });
   };
 
-  const handleContractAddressInputChange = (event) => {
-    setContractAddressInput(event.target.value);
-  };
-
   return (
     <div className="container">
-      <h1 className="header">MetaMask Web App</h1>
+      <h1 className="header">Goerli - Batch Deposit Validators</h1>
       <div>
         <p className="account-info">Connected Account: {account}</p>
-        <input
-          type="text"
-          value={contractAddressInput}
-          onChange={handleContractAddressInputChange}
-          placeholder="Enter contract address..."
-          className="input"
-        />
+        <a rel="noreferrer" target="_blank" href={contractAddressURL} className="contract-info">Deposit to contract: {contractAddressInput}</a>
+        <div className='spacer'></div>
         <textarea
           value={formData.message}
           onChange={handleInputChange}
@@ -230,8 +118,16 @@ function isValidJSON(jsonString) {
     JSON.parse(jsonString);
     return true;
   } catch (error) {
+    console.error("JSON is not valid: ",error);
     return false;
   }
+}
+
+function keyToHex(value) {
+  if (value.slice(0,2) === "0x") {
+    return value;
+  }
+  return "0x" + value;
 }
 
 export default App;
