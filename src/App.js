@@ -7,8 +7,8 @@ function App() {
   const [web3, setWeb3] = useState(null);
   const [contract, setContract] = useState(null);
   const [formData, setFormData] = useState('');
-  const contractAddressInput = "0x8e22f3F44A6b4E1DFFe22587A06E22283E7AbFB1";
-  const contractAddressURL = "https://goerli.etherscan.io/address/" + contractAddressInput;
+  const contractAddressInput = "0x39DC6a99209B5e6B81dC8540C86Ff10981ebDA29";
+  const contractAddressURL = "https://etherscan.io/address/" + contractAddressInput;
   
 
   useEffect(() => {
@@ -93,7 +93,7 @@ function App() {
 
   return (
     <div className="container">
-      <h1 className="header">Goerli - Batch Deposit Validators</h1>
+      <h1 className="header">Ethereum Mainnet - Batch Deposit Validators</h1>
       <div>
         <p className="account-info">Connected Account: {account}</p>
         <a rel="noreferrer" target="_blank" href={contractAddressURL} className="contract-info">Deposit to contract: {contractAddressInput}</a>
